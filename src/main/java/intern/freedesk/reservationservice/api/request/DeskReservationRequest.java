@@ -12,8 +12,6 @@ import java.util.Date;
 
 public class DeskReservationRequest extends BaseRequest {
 
-    private String email; // TODO token service geldiginde bu emaili token ile degistirecegiz.
-
     private String deskId;
 
     private String reservationStartDate; //timestamp

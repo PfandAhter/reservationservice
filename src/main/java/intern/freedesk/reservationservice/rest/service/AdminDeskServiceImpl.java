@@ -1,7 +1,6 @@
 package intern.freedesk.reservationservice.rest.service;
 
 import intern.freedesk.reservationservice.api.client.TokenServiceClient;
-import intern.freedesk.reservationservice.api.client.UserServiceClient;
 import intern.freedesk.reservationservice.api.request.DeskReservationRequest;
 import intern.freedesk.reservationservice.api.response.BaseResponse;
 import intern.freedesk.reservationservice.api.response.UserIdResponse;
@@ -12,26 +11,25 @@ import intern.freedesk.reservationservice.model.entity.DeskReservation;
 import intern.freedesk.reservationservice.repository.DeskRepository;
 import intern.freedesk.reservationservice.repository.DeskReservationRepository;
 import intern.freedesk.reservationservice.rest.service.interfaces.ICreateReservation;
-import jakarta.transaction.Transactional;
+import intern.freedesk.reservationservice.rest.service.interfaces.MapperService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.List;
 
 @Service
 @Slf4j //@OPERATION
 @RequiredArgsConstructor
 
-public class AdminDeskService implements ICreateReservation {
+public class AdminDeskServiceImpl implements ICreateReservation {
 
     private final DeskRepository deskRepository;
 
     private final TokenServiceClient tokenServiceClient;
 
-    private final MapperServiceImpl mapperService;
+    private final MapperService mapperService;
 
     private final DeskReservationRepository deskReservationRepository;
 
@@ -44,14 +42,12 @@ public class AdminDeskService implements ICreateReservation {
         try {
             Desk desk = deskRepository.findByDeskId(request.getDeskId());
 
-            if (desk == null && desk.getActive().equals(Status.ACTIVE.getValue())) {
+            if (desk == null || !desk.getActive().equals(Status.ACTIVE.getValue())) {
                 throw new NotFoundException("DESK NOT FOUND \nDESK NOT ACTIVE");
             }
 
             desk.setActive(Status.RESERVED.getValue());
             deskRepository.save(desk);
-
-//        UserIdResponse userId = tokenServiceClient.extractUserIDByEmail(request);
 
             UserIdResponse userId = tokenServiceClient.extractUserId(request);
 

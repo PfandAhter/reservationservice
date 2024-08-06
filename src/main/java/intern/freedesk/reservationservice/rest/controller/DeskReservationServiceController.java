@@ -3,7 +3,7 @@ package intern.freedesk.reservationservice.rest.controller;
 import intern.freedesk.reservationservice.api.DeskReservationControllerApi;
 import intern.freedesk.reservationservice.api.request.*;
 import intern.freedesk.reservationservice.api.response.*;
-import intern.freedesk.reservationservice.rest.service.DeskReservationReservationServiceImpl;
+import intern.freedesk.reservationservice.rest.service.DeskReservationServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 
 public class DeskReservationServiceController implements DeskReservationControllerApi {
 
-    private final DeskReservationReservationServiceImpl deskService;
+    private final DeskReservationServiceImpl deskService;
 
     @Override
     public ResponseEntity<DeskReservationResponse> getDeskReservation(int deskNo) {

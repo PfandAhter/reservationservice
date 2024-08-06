@@ -14,6 +14,7 @@ import intern.freedesk.reservationservice.model.entity.DeskReservation;
 import intern.freedesk.reservationservice.repository.DeskRepository;
 import intern.freedesk.reservationservice.repository.DeskReservationRepository;
 import intern.freedesk.reservationservice.rest.service.interfaces.DeskReservationService;
+import intern.freedesk.reservationservice.rest.service.interfaces.MapperService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,21 +30,21 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 
-public class DeskReservationReservationServiceImpl implements DeskReservationService {
+public class DeskReservationServiceImpl implements DeskReservationService {
 
     private final DeskRepository deskRepository;
 
     private final DeskReservationRepository deskReservationRepository;
 
-    private final MapperServiceImpl mapperService;
+    private final MapperService mapperService;
 
     private final TokenServiceClient tokenServiceClient;
 
     private final UserServiceClient userServiceClient;
 
-    private final UserDeskService userDeskService;
+    private final UserDeskServiceImpl userDeskServiceImpl;
 
-    private final AdminDeskService adminDeskService;
+    private final AdminDeskServiceImpl adminDeskServiceImpl;
 
 
     @Transactional
@@ -76,9 +77,9 @@ public class DeskReservationReservationServiceImpl implements DeskReservationSer
             }
 
             if(userInfo.getRole().equals(Role.ADMIN)){
-                return adminDeskService.createReservation(request);
+                return adminDeskServiceImpl.createReservation(request);
             }else{
-                return userDeskService.createReservation(request);
+                return userDeskServiceImpl.createReservation(request);
             }
 
         }catch (Exception e){
@@ -125,6 +126,8 @@ public class DeskReservationReservationServiceImpl implements DeskReservationSer
     @Transactional
     public BaseResponse updateReservation(DeskReservationUpdateRequest request) throws NotFoundException {
         try {
+            UserIdResponse userInfo = tokenServiceClient.extractUserId(request);
+
             Desk desk = deskRepository.findByDeskId(request.getDeskId());
 
             if (desk == null) {
@@ -135,9 +138,8 @@ public class DeskReservationReservationServiceImpl implements DeskReservationSer
             if (deskReservation == null) {
                 throw new NotFoundException("RESERVATION NOT FOUND");
             }
-//        UserIdResponse userId = tokenServiceClient.extractUserIDByEmail(request);
 
-            if (request.getEmail() == null) {
+            if (userInfo.getUserId() == null) {
                 throw new NotFoundException("USER NOT FOUND");
             }
             setReservationDates(deskReservation, request);
@@ -175,12 +177,12 @@ public class DeskReservationReservationServiceImpl implements DeskReservationSer
     public ReservationListResponse getOldReservationList(BaseRequest request)throws NotFoundException {
         UserIdResponse userIdResponse = tokenServiceClient.extractUserId(request);
 
-        List<DeskReservation> reservationByEmail = deskReservationRepository.findReservationByUserId(userIdResponse.getUserId());
+        List<DeskReservation> reservationByUserId = deskReservationRepository.findReservationByUserId(userIdResponse.getUserId());
 
-        if(reservationByEmail == null){
+        if(reservationByUserId == null){
             throw new NotFoundException("RESERVATION NOT FOUND");
         }
-        List<DeskReservationDTO> deskReservationDTOList = mapperService.map(reservationByEmail, DeskReservationDTO.class);
+        List<DeskReservationDTO> deskReservationDTOList = mapperService.map(reservationByUserId, DeskReservationDTO.class);
 
         for (DeskReservationDTO deskReservationDTO: deskReservationDTOList) {
             deskReservationDTO.setDeskNo(deskRepository.findByDeskId(deskReservationDTO.getDeskId()).getDeskNo());

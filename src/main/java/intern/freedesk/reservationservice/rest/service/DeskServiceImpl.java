@@ -10,6 +10,7 @@ import intern.freedesk.reservationservice.model.dto.DeskDTO;
 import intern.freedesk.reservationservice.model.entity.Desk;
 import intern.freedesk.reservationservice.repository.DeskRepository;
 import intern.freedesk.reservationservice.rest.service.interfaces.DeskService;
+import intern.freedesk.reservationservice.rest.service.interfaces.MapperService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,13 +28,12 @@ public class DeskServiceImpl implements DeskService {
 
     private final DeskRepository deskRepository;
 
-    private final MapperServiceImpl mapperService;
+    private final MapperService mapperService;
 
 
     public GetDeskListResponse listDesk (){
         List<Desk> deskList = deskRepository.findAllActiveAndDeActivateAndReservedDesks();
         List<DeskDTO> deskDTOList = mapperService.map(deskList, DeskDTO.class);
-
 
         return new GetDeskListResponse(deskDTOList);
     }
@@ -104,9 +104,4 @@ public class DeskServiceImpl implements DeskService {
 
         return new BaseResponse();
     }
-
-
-
-
-
 }
